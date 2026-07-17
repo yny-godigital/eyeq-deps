@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <PackageId>BaumerNeoApi.Native</PackageId>
+    <Version>1.5.0</Version>
+    <Authors>Baumer</Authors>
+    <Description>Baumer NeoAPI wrapper for Linux with native .so binaries.</Description>
+    <PackageTags>baumer;neoapi;camera</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <IncludeBuildOutput>true</IncludeBuildOutput>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+    <NoPackageAnalysis>false</NoPackageAnalysis>
+  </PropertyGroup>
+
+  <!-- NeoAPI.cs is compiled by the SDK into lib/net9.0/BaumerNeoApi.Native.dll -->
+
+  <!-- Native .so files → runtimes/linux-x64/native/ for platform-appropriate deployment -->
+  <ItemGroup>
+    <None Include="runtimes/**/*" PackagePath="runtimes/" Pack="true" />
+  </ItemGroup>
+
+  <!-- Build targets → build/ for automatic import -->
+  <ItemGroup>
+    <None Include="build/*" PackagePath="build/" Pack="true" />
+  </ItemGroup>
+</Project>

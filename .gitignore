@@ -1,6 +1,10 @@
 # Built NuGet packages (pushed to GitHub Packages — not checked in)
 *.nupkg
+# ... except official third-party nupkgs that we re-host
+!official/*.nupkg
 
 # Build artifacts
 AISVision.Native/obj/
 AISVision.Native/bin/
+BaumerNeoApi.Native/obj/
+BaumerNeoApi.Native/bin/

@@ -1,0 +1,16 @@
+<Project>
+
+  <!--
+    Deploy Baumer NeoAPI native .so files and their dependencies to $(OutDir).
+    The P/Invoke wrapper references libneoapi_csharp.so at runtime.
+  -->
+  <ItemGroup Condition="Exists('$(MSBuildThisFileDirectory)../runtimes/linux-x64/native/')">
+    <Content Include="$(MSBuildThisFileDirectory)../runtimes/linux-x64/native/libneoapi_csharp.so"
+             Link="libneoapi_csharp.so"
+             CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(MSBuildThisFileDirectory)../runtimes/linux-x64/native/lib/**"
+             Link="%(RecursiveDir)%(FileName)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,54 @@
+name: Publish BaumerNeoApi.Native
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Package version (e.g. 1.5.0)'
+        required: true
+        type: string
+        default: '1.5.0'
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  PACKAGE_PROJECT: BaumerNeoApi.Native/BaumerNeoApi.Native.csproj
+  GITHUB_FEED: https://nuget.pkg.github.com/yny-godigital/index.json
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Validate native .so files exist
+        run: |
+          count=$(find BaumerNeoApi.Native/runtimes/linux-x64/native/lib -name '*.so*' 2>/dev/null | wc -l)
+          if [ "$count" -lt 10 ]; then
+            echo "::error::Only $count .so files found — expected 10+. Place the Baumer NeoAPI Linux SDK files and commit them, then re-run."
+            exit 1
+          fi
+          if [ ! -f BaumerNeoApi.Native/runtimes/linux-x64/native/libneoapi_csharp.so ]; then
+            echo "::error::libneoapi_csharp.so not found."
+            exit 1
+          fi
+          echo "✅ Native SDK files present"
+
+      - name: Update version in csproj
+        run: |
+          sed -i "s|<Version>.*</Version>|<Version>${{ inputs.version }}</Version>|" \
+            "${{ env.PACKAGE_PROJECT }}"
+
+      - name: Pack
+        run: dotnet pack "${{ env.PACKAGE_PROJECT }}" -c Release -o .
+
+      - name: Push to GitHub Packages
+        run: |
+          dotnet nuget push BaumerNeoApi.Native.${{ inputs.version }}.nupkg \
+            --source "${{ env.GITHUB_FEED }}" \
+            --api-key "${{ secrets.GITHUB_TOKEN }}" \
+            --skip-duplicate
