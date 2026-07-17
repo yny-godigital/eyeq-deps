@@ -1,0 +1,27 @@
+<Project>
+
+  <!--
+    Deploy NRT native dependency DLLs to $(OutDir).
+    nrt.dll (C++/CLI assembly) is automatically copied from lib/net9.0/ by NuGet.
+    The remaining native DLLs (OpenVINO, ONNX Runtime, OpenCV, TensorRT, CUDA, etc.)
+    must also be present alongside the executable at runtime.
+  -->
+  <PropertyGroup>
+    <NrtNativeSource>$(MSBuildThisFileDirectory)../runtimes/win-x64/native/</NrtNativeSource>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <NrtNativeDlls Include="$(NrtNativeSource)*.dll" Condition="Exists('$(NrtNativeSource)')" />
+  </ItemGroup>
+
+  <Target Name="_NrtCopyToOutDir"
+          BeforeTargets="AssignTargetPaths"
+          Condition="'@(NrtNativeDlls)' != ''">
+    <Copy SourceFiles="@(NrtNativeDlls)"
+          DestinationFolder="$(OutDir)"
+          SkipUnchangedFiles="true" />
+    <Message Importance="normal"
+             Text="Nrt.Native: deployed %(NrtNativeDlls.Count) DLLs to $(OutDir)" />
+  </Target>
+
+</Project>

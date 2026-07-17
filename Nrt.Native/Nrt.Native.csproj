@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.Build.NoTargets/3.7.56">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <PackageId>Nrt.Native</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>ChewCW</Authors>
+    <Description>NRT (Neuro Runtime) inference engine native DLLs for Windows x64. Includes nrt.dll (C++/CLI wrapper), OpenVINO, ONNX Runtime, OpenCV, TensorRT, CUDA, DirectML, and TBB.</Description>
+    <PackageTags>nrt;neuro-runtime;inference;windows</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+    <NoPackageAnalysis>false</NoPackageAnalysis>
+  </PropertyGroup>
+
+  <!-- nrt.dll C++/CLI mixed-mode assembly → lib/net9.0/ for compile-time assembly reference -->
+  <ItemGroup>
+    <None Include="lib/net9.0/*.dll" PackagePath="lib/net9.0/" Pack="true" />
+  </ItemGroup>
+
+  <!-- Native dependency DLLs → runtimes/win-x64/native/ for platform-appropriate deployment -->
+  <ItemGroup>
+    <None Include="runtimes/win-x64/native/*.dll" PackagePath="runtimes/win-x64/native/" Pack="true" />
+  </ItemGroup>
+
+  <!-- Build targets → build/ for automatic import by consuming projects -->
+  <ItemGroup>
+    <None Include="build/*" PackagePath="build/" Pack="true" />
+  </ItemGroup>
+</Project>
