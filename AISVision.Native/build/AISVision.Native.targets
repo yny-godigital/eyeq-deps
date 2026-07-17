@@ -1,0 +1,28 @@
+<Project>
+
+  <!--
+    Deploy AISVision native DLLs and plugins.xml to $(OutDir)/lib/AISVision/.
+    This matches the runtime layout expected by the C++/CLI wrapper assemblies.
+  -->
+    <AISVisionNativeSource>$(MSBuildThisFileDirectory)../runtimes/win-x64/native/</AISVisionNativeSource>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AISVisionNativeDlls Include="$(AISVisionNativeSource)*.dll" Condition="Exists('$(AISVisionNativeSource)')" />
+    <AISVisionNativeXml  Include="$(AISVisionNativeSource)plugins.xml" Condition="Exists('$(AISVisionNativeSource)')" />
+  </ItemGroup>
+
+  <Target Name="_AISVisionCopyToLibDir"
+          BeforeTargets="AssignTargetPaths"
+          Condition="'@(AISVisionNativeDlls)' != ''">
+    <Copy SourceFiles="@(AISVisionNativeDlls)"
+          DestinationFolder="$(OutDir)lib/AISVision/"
+          SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(AISVisionNativeXml)"
+          DestinationFolder="$(OutDir)lib/AISVision/"
+          SkipUnchangedFiles="true" />
+    <Message Importance="normal"
+             Text="AISVision.Native: deployed %(AISVisionNativeDlls.Count) DLLs to $(OutDir)lib/AISVision/" />
+  </Target>
+
+</Project>

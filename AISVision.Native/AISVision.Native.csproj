@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.Build.NoTargets/3.7.56">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <PackageId>AISVision.Native</PackageId>
+    <Version>1.6.4</Version>
+    <Authors>AISVision</Authors>
+    <Description>Native AISVision libraries including OpenVINO, ONNX Runtime, OpenCV, and xditk prediction/inference DLLs.</Description>
+    <PackageTags>aisvision</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+
+    <!-- Prevent the native DLLs from triggering NU5100 warnings -->
+    <NoPackageAnalysis>false</NoPackageAnalysis>
+  </PropertyGroup>
+
+  <!-- C++/CLI wrapper DLLs → lib/net9.0/ for compile-time assembly references -->
+  <ItemGroup>
+    <None Include="lib/net9.0/libxditk_aisv_predictor_cswrapper.dll" PackagePath="lib/net9.0/" Pack="true" />
+    <None Include="lib/net9.0/libxditk_aisvino_predictor_cswrapper.dll" PackagePath="lib/net9.0/" Pack="true" />
+  </ItemGroup>
+
+  <!-- Native DLLs + plugins.xml → runtimes/win-x64/native/ for platform-appropriate deployment -->
+  <ItemGroup>
+    <None Include="runtimes/win-x64/native/*.dll" PackagePath="runtimes/win-x64/native/" Pack="true" />
+    <None Include="runtimes/win-x64/native/plugins.xml" PackagePath="runtimes/win-x64/native/" Pack="true" />
+  </ItemGroup>
+
+  <!-- Build targets → build/ for automatic import by consuming projects -->
+  <ItemGroup>
+    <None Include="build/*" PackagePath="build/" Pack="true" />
+  </ItemGroup>
+</Project>

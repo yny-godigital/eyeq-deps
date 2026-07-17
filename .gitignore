@@ -1,0 +1,6 @@
+# Built NuGet packages (pushed to GitHub Packages — not checked in)
+*.nupkg
+
+# Build artifacts
+AISVision.Native/obj/
+AISVision.Native/bin/

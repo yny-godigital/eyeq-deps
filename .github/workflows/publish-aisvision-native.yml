@@ -1,0 +1,56 @@
+name: Publish AISVision.Native
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Package version (e.g. 1.6.4)'
+        required: true
+        type: string
+        default: '1.6.4'
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  PACKAGE_PROJECT: AISVision.Native/AISVision.Native.csproj
+  GITHUB_FEED: https://nuget.pkg.github.com/yny-godigital/index.json
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Validate native DLLs exist
+        run: |
+          count=$(ls AISVision.Native/native/*.dll 2>/dev/null | wc -l)
+          if [ "$count" -lt 40 ]; then
+            echo "::error::Only $count native DLLs found in AISVision.Native/native/ — expected 40+."
+            echo "Place the AISVision native DLLs in that directory and commit them, then re-run."
+            exit 1
+          fi
+          count2=$(ls AISVision.Native/lib/net9.0/*.dll 2>/dev/null | wc -l)
+          if [ "$count2" -lt 2 ]; then
+            echo "::error::C++/CLI wrapper DLLs not found in AISVision.Native/lib/net9.0/"
+            exit 1
+          fi
+          echo "✅ $count native DLLs + $count2 C++/CLI wrappers present"
+
+      - name: Update version in csproj
+        run: |
+          sed -i "s|<Version>.*</Version>|<Version>${{ inputs.version }}</Version>|" \
+            "${{ env.PACKAGE_PROJECT }}"
+
+      - name: Pack
+        run: dotnet pack "${{ env.PACKAGE_PROJECT }}" -c Release -o .
+
+      - name: Push to GitHub Packages
+        run: |
+          dotnet nuget push AISVision.Native.${{ inputs.version }}.nupkg \
+            --source "${{ env.GITHUB_FEED }}" \
+            --api-key "${{ secrets.GITHUB_TOKEN }}" \
+            --skip-duplicate
