@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Package version (e.g. 1.6.4)'
+        description: '1.6.4'
         required: true
         type: string
         default: '1.6.4'
@@ -25,9 +25,9 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Validate native DLLs exist
+      - name: Validate native DLLs exist in Windows env.
         run: |
-          count=$(ls AISVision.Native/native/*.dll 2>/dev/null | wc -l)
+          count=$(ls AISVision.Native/runtimes/win-x64/native/*.dll 2>/dev/null | wc -l)
           if [ "$count" -lt 40 ]; then
             echo "::error::Only $count native DLLs found in AISVision.Native/native/ — expected 40+."
             echo "Place the AISVision native DLLs in that directory and commit them, then re-run."
