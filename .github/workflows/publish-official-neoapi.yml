@@ -1,0 +1,44 @@
+name: Publish Official NeoAPI
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Package version (e.g. 1.5.0)'
+        required: true
+        type: string
+        default: '1.5.0'
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  GITHUB_FEED: https://nuget.pkg.github.com/yny-godigital/index.json
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Validate official nupkg exists
+        run: |
+          nupkg="official/neoapi.${{ inputs.version }}.nupkg"
+          if [ ! -f "$nupkg" ]; then
+            echo "::error::Official nupkg not found: $nupkg"
+            echo "Place the official Baumer NeoAPI .nupkg in official/ and commit it, then re-run."
+            exit 1
+          fi
+          echo "✅ $nupkg found ($(du -h "$nupkg" | cut -f1))"
+
+      - name: Push to GitHub Packages
+        run: |
+          dotnet nuget push "official/neoapi.${{ inputs.version }}.nupkg" \
+            --source "${{ env.GITHUB_FEED }}" \
+            --api-key "${{ secrets.GITHUB_TOKEN }}" \
+            --skip-duplicate
