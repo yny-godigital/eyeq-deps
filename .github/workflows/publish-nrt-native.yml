@@ -19,24 +19,36 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Validate native DLLs exist
+      - name: Validate native DLLs (real binaries, not LFS pointers)
         run: |
           count=$(ls Nrt.Native/runtimes/win-x64/native/*.dll 2>/dev/null | wc -l)
           if [ "$count" -lt 20 ]; then
             echo "::error::Only $count native DLLs found — expected 20+. Place the NRT runtime DLLs in Nrt.Native/runtimes/win-x64/native/ and commit them, then re-run."
             exit 1
           fi
-          if [ ! -f Nrt.Native/lib/net9.0/nrt.dll ]; then
+          if head -1 Nrt.Native/runtimes/win-x64/native/*.dll 2>/dev/null | grep -q "git-lfs"; then
+            echo "::error::DLLs are git LFS pointers instead of real binaries. Run 'git lfs pull' before packing."
+            exit 1
+          fi
+          count2=$(ls Nrt.Native/lib/net9.0/*.dll 2>/dev/null | wc -l)
+          if [ "$count2" -lt 1 ]; then
             echo "::error::nrt.dll not found in lib/net9.0/"
             exit 1
           fi
-          echo "✅ $count native DLLs + nrt.dll present"
+          if head -1 Nrt.Native/lib/net9.0/*.dll 2>/dev/null | grep -q "git-lfs"; then
+            echo "::error::C++/CLI wrapper is LFS pointer instead of real binary."
+            exit 1
+          fi
+          echo "✅ $count native DLLs + $count2 C++/CLI wrappers present (real binaries)"
+
 
       - name: Update version in csproj
         run: |
