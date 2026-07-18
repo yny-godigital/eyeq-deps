@@ -8,3 +8,7 @@ AISVision.Native/obj/
 AISVision.Native/bin/
 BaumerNeoApi.Native/obj/
 BaumerNeoApi.Native/bin/
+Nrt.Native/obj/
+Nrt.Native/bin/
+Nrt.Native/src/NrtSdk/obj/
+Nrt.Native/src/NrtSdk/bin/
