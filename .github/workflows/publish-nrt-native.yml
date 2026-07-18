@@ -38,16 +38,13 @@ jobs:
             echo "::error::DLLs are git LFS pointers instead of real binaries. Run 'git lfs pull' before packing."
             exit 1
           fi
-          count2=$(ls Nrt.Native/lib/net9.0/*.dll 2>/dev/null | wc -l)
-          if [ "$count2" -lt 1 ]; then
-            echo "::error::nrt.dll not found in lib/net9.0/"
-            exit 1
-          fi
-          if head -1 Nrt.Native/lib/net9.0/*.dll 2>/dev/null | grep -q "git-lfs"; then
-            echo "::error::C++/CLI wrapper is LFS pointer instead of real binary."
-            exit 1
-          fi
-          echo "✅ $count native DLLs + $count2 C++/CLI wrappers present (real binaries)"
+          echo "✅ $count native DLLs present (real binaries)"
+
+      - name: Build NrtSdk.dll from source
+        run: |
+          dotnet build Nrt.Native/src/NrtSdk/NrtSdk.csproj -c Release
+          mkdir -p Nrt.Native/lib/net9.0/
+          cp Nrt.Native/src/NrtSdk/bin/Release/net9.0/NrtSdk.dll Nrt.Native/lib/net9.0/
 
 
       - name: Update version in csproj
