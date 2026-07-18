@@ -4,7 +4,7 @@
     <PackageId>Nrt.Native</PackageId>
     <Version>1.0.0</Version>
     <Authors>ChewCW</Authors>
-    <Description>NRT (Neuro Runtime) inference engine native DLLs for Windows x64. Includes nrt.dll (C++/CLI wrapper), OpenVINO, ONNX Runtime, OpenCV, TensorRT, CUDA, DirectML, and TBB.</Description>
+    <Description>NRT (Neuro Runtime) inference engine. Includes NrtSdk.dll (SWIG-generated C# P/Invoke wrapper) and native DLLs (OpenVINO, ONNX Runtime, OpenCV, TensorRT, CUDA, DirectML, TBB) for Windows x64.</Description>
     <PackageTags>nrt;neuro-runtime;inference;windows</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <IncludeBuildOutput>false</IncludeBuildOutput>
@@ -12,7 +12,7 @@
     <NoPackageAnalysis>false</NoPackageAnalysis>
   </PropertyGroup>
 
-  <!-- nrt.dll C++/CLI mixed-mode assembly → lib/net9.0/ for compile-time assembly reference -->
+  <!-- NrtSdk.dll (SWIG-generated C# wrapper) → lib/net9.0/ for compile-time assembly reference -->
   <ItemGroup>
     <None Include="lib/net9.0/*.dll" PackagePath="lib/net9.0/" Pack="true" />
   </ItemGroup>

@@ -2,8 +2,8 @@
 
   <!--
     Deploy NRT native dependency DLLs to $(OutDir).
-    nrt.dll (C++/CLI assembly) is automatically copied from lib/net9.0/ by NuGet.
-    The remaining native DLLs (OpenVINO, ONNX Runtime, OpenCV, TensorRT, CUDA, etc.)
+    NrtSdk.dll is automatically referenced from lib/net9.0/ by NuGet.
+    The native DLLs (OpenVINO, ONNX Runtime, OpenCV, TensorRT, CUDA, etc.)
     must also be present alongside the executable at runtime.
   -->
   <PropertyGroup>
