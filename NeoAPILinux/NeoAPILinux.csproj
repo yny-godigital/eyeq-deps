@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
-    <PackageId>BaumerNeoApi.Native</PackageId>
+    <PackageId>NeoAPILinux</PackageId>
     <Version>1.5.0</Version>
     <Authors>Baumer</Authors>
     <Description>Baumer NeoAPI wrapper for Linux with native .so binaries.</Description>
@@ -12,7 +12,7 @@
     <NoPackageAnalysis>false</NoPackageAnalysis>
   </PropertyGroup>
 
-  <!-- NeoAPI.cs is compiled by the SDK into lib/net9.0/BaumerNeoApi.Native.dll -->
+  <!-- NeoAPI.cs is compiled by the SDK into lib/net9.0/NeoAPILinux.dll -->
 
   <!-- Native .so files → runtimes/linux-x64/native/ for platform-appropriate deployment -->
   <ItemGroup>

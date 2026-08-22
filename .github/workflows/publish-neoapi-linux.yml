@@ -1,4 +1,4 @@
-name: Publish BaumerNeoApi.Native
+name: Publish NeoAPILinux
 
 on:
   workflow_dispatch:
@@ -11,7 +11,7 @@ on:
 
 env:
   DOTNET_VERSION: '9.0.x'
-  PACKAGE_PROJECT: BaumerNeoApi.Native/BaumerNeoApi.Native.csproj
+  PACKAGE_PROJECT: NeoAPILinux/NeoAPILinux.csproj
   GITHUB_FEED: https://nuget.pkg.github.com/yny-godigital/index.json
 
 jobs:
@@ -27,12 +27,12 @@ jobs:
 
       - name: Validate native .so files exist
         run: |
-          count=$(find BaumerNeoApi.Native/runtimes/linux-x64/native/lib -name '*.so*' 2>/dev/null | wc -l)
+          count=$(find NeoAPILinux/runtimes/linux-x64/native/lib -name '*.so*' 2>/dev/null | wc -l)
           if [ "$count" -lt 10 ]; then
             echo "::error::Only $count .so files found — expected 10+. Place the Baumer NeoAPI Linux SDK files and commit them, then re-run."
             exit 1
           fi
-          if [ ! -f BaumerNeoApi.Native/runtimes/linux-x64/native/libneoapi_csharp.so ]; then
+          if [ ! -f NeoAPILinux/runtimes/linux-x64/native/libneoapi_csharp.so ]; then
             echo "::error::libneoapi_csharp.so not found."
             exit 1
           fi
@@ -48,7 +48,7 @@ jobs:
 
       - name: Push to GitHub Packages
         run: |
-          dotnet nuget push BaumerNeoApi.Native.${{ inputs.version }}.nupkg \
+          dotnet nuget push NeoAPILinux.${{ inputs.version }}.nupkg \
             --source "${{ env.GITHUB_FEED }}" \
             --api-key "${{ secrets.GITHUB_TOKEN }}" \
             --skip-duplicate

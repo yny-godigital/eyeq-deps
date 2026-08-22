@@ -1,4 +1,4 @@
-name: Publish Official NeoAPI
+name: Publish NeoAPIWindows
 
 on:
   workflow_dispatch:
@@ -36,9 +36,23 @@ jobs:
           fi
           echo "✅ $nupkg found ($(du -h "$nupkg" | cut -f1))"
 
+      - name: Repack official nupkg as NeoAPIWindows
+        run: |
+          rm -rf repack && mkdir -p repack/pkg
+          unzip -q "official/neoapi.${{ inputs.version }}.nupkg" -d repack/pkg
+          sed -i 's|<id>neoAPI</id>|<id>NeoAPIWindows</id>|' repack/pkg/*.nuspec
+          sed -i 's|<dc:identifier>neoAPI</dc:identifier>|<dc:identifier>NeoAPIWindows</dc:identifier>|' \
+            repack/pkg/package/services/metadata/core-properties/*.psmdcp
+          grep -q '<id>NeoAPIWindows</id>' repack/pkg/*.nuspec || {
+            echo "::error::Failed to rewrite package id in nuspec"
+            exit 1
+          }
+          (cd repack/pkg && zip -qr ../NeoAPIWindows.${{ inputs.version }}.nupkg .)
+          echo "✅ NeoAPIWindows.${{ inputs.version }}.nupkg created"
+
       - name: Push to GitHub Packages
         run: |
-          dotnet nuget push "official/neoapi.${{ inputs.version }}.nupkg" \
+          dotnet nuget push "repack/NeoAPIWindows.${{ inputs.version }}.nupkg" \
             --source "${{ env.GITHUB_FEED }}" \
             --api-key "${{ secrets.GITHUB_TOKEN }}" \
             --skip-duplicate
