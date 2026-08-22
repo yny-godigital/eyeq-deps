@@ -28,10 +28,10 @@ jobs:
 
       - name: Validate official nupkg exists
         run: |
-          nupkg="official/neoapi.${{ inputs.version }}.nupkg"
+          nupkg="NeoAPIWindows/neoapi.${{ inputs.version }}.nupkg"
           if [ ! -f "$nupkg" ]; then
-            echo "::error::Official nupkg not found: $nupkg"
-            echo "Place the official Baumer NeoAPI .nupkg in official/ and commit it, then re-run."
+            echo "::error::NeoAPIWindows nupkg not found: $nupkg"
+            echo "Place the official Baumer NeoAPI .nupkg in NeoAPIWindows/ and commit it, then re-run."
             exit 1
           fi
           echo "✅ $nupkg found ($(du -h "$nupkg" | cut -f1))"
@@ -39,7 +39,7 @@ jobs:
       - name: Repack official nupkg as NeoAPIWindows
         run: |
           rm -rf repack && mkdir -p repack/pkg
-          unzip -q "official/neoapi.${{ inputs.version }}.nupkg" -d repack/pkg
+          unzip -q "NeoAPIWindows/neoapi.${{ inputs.version }}.nupkg" -d repack/pkg
           sed -i 's|<id>neoAPI</id>|<id>NeoAPIWindows</id>|' repack/pkg/*.nuspec
           sed -i 's|<dc:identifier>neoAPI</dc:identifier>|<dc:identifier>NeoAPIWindows</dc:identifier>|' \
             repack/pkg/package/services/metadata/core-properties/*.psmdcp
