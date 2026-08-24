@@ -40,6 +40,7 @@ jobs:
         run: |
           rm -rf repack && mkdir -p repack/pkg
           unzip -q "NeoAPIWindows/neoapi.${{ inputs.version }}.nupkg" -d repack/pkg
+          mv repack/pkg/build/neoapi.targets repack/pkg/build/NeoAPIWindows.targets
           sed -i 's|<id>neoAPI</id>|<id>NeoAPIWindows</id>|' repack/pkg/*.nuspec
           sed -i 's|<dc:identifier>neoAPI</dc:identifier>|<dc:identifier>NeoAPIWindows</dc:identifier>|' \
             repack/pkg/package/services/metadata/core-properties/*.psmdcp
@@ -47,7 +48,15 @@ jobs:
             echo "::error::Failed to rewrite package id in nuspec"
             exit 1
           }
+          [ -f repack/pkg/build/NeoAPIWindows.targets ] || {
+            echo "::error::build/NeoAPIWindows.targets missing - NuGet auto-import requires targets named after the package id"
+            exit 1
+          }
           (cd repack/pkg && zip -qr ../NeoAPIWindows.${{ inputs.version }}.nupkg .)
+          unzip -l "repack/NeoAPIWindows.${{ inputs.version }}.nupkg" | grep -q "build/NeoAPIWindows.targets" || {
+            echo "::error::Repacked nupkg does not contain build/NeoAPIWindows.targets"
+            exit 1
+          }
           echo "✅ NeoAPIWindows.${{ inputs.version }}.nupkg created"
 
       - name: Push to GitHub Packages

@@ -1,0 +1,16 @@
+<Project>
+
+  <!--
+    Deploy Baumer NeoAPI native dlls, .cti transport layers and VC runtime to $(OutDir).
+    The P/Invoke wrapper references neoapi_csharp.dll at runtime.
+    This file MUST be named after the package id (NeoAPIWindows.targets),
+    otherwise NuGet's PackageReference convention will not auto-import it.
+  -->
+  <ItemGroup Condition="Exists('$(MSBuildThisFileDirectory)../runtimes/win-x64/native/')">
+    <Content Include="$(MSBuildThisFileDirectory)../runtimes/win-x64/native/**"
+             Link="%(RecursiveDir)%(FileName)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>
