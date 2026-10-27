@@ -43,3 +43,19 @@ A passing run records:
 A successful native-library load is not sufficient. Record a real classification result. Publication requires this validation to pass against the same package hash that is published.
 
 Run the program without arguments for the managed API check alone. That path does not invoke native inference and does not require a license.
+
+## Release procedure
+
+A package built again can have different bytes even when its version stays the same, so publish the downloaded candidate whose hash appears in the licensed test evidence. The `Publish Nrt5.Native` workflow runs manually with a `validate` or `publish` action.
+
+1. Obtain owner-approved redistribution terms and store the actual terms in `LICENSE.txt`.
+2. Commit those terms, together with any attribution changes they require.
+3. Dispatch `validate` with the intended package version.
+4. Require the build, package, and Windows consumer jobs to succeed.
+5. Download that run's `nrt5-candidate` artifact.
+6. Restore and publish the consumer from the downloaded package in a fresh NuGet cache.
+7. Run the licensed Windows smoke test against that consumer.
+8. Record the package hash, machine prerequisites, and complete output in a durable evidence location.
+9. Dispatch `publish` with the validation run ID, the exact tested hash, the permission reference, and the smoke-test reference.
+
+The workflow checks recorded evidence. It cannot check the legal validity of a contract or the truth of an attestation, and the owner remains responsible for those approvals. CI does not claim licensed inference coverage.
