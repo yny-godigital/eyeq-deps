@@ -17,3 +17,29 @@ Build a local validation package with:
 ```bash
 dotnet pack Nrt5.Native/Nrt5.Native.csproj -c Release -p:PackageVersion=0.0.0-local -o Nrt5.Native/.artifacts
 ```
+
+## Windows runtime validation
+
+Run this check on a licensed Windows x64 machine against a consumer restored and published from the exact candidate package. The model and image stay outside the package and are supplied by the tester:
+
+```powershell
+$consumer = "Nrt5.Native/.artifacts/publish/Consumer.dll"
+$model = "C:/nrt-test/cla_ex_model.net"
+$image = "C:/nrt-test/normal0.png"
+dotnet $consumer --smoke $model $image DEVICE_CPU
+Get-FileHash "Nrt5.Native/.artifacts/Nrt5.Native.0.0.0-local.nupkg" -Algorithm SHA256
+```
+
+`--smoke` takes a classification model, one image, and the name of an `nrt.DevType` member. Select a different backend if the license requires one. It infers twice, first from the paths as given and then from copies with Unicode file names, and it confirms that an invalid model path reports a vendor error. The program calls `nrt.cleanup()` and removes its temporary directory, then prints `PASS: licensed Windows smoke test` only after cleanup succeeds.
+
+A passing run records:
+
+- Operating system and .NET runtime versions
+- Backend, device index, and device driver versions
+- CodeMeter version
+- Package SHA-256
+- The complete command output, including an actual inference result
+
+A successful native-library load is not sufficient. Record a real classification result. Publication requires this validation to pass against the same package hash that is published.
+
+Run the program without arguments for the managed API check alone. That path does not invoke native inference and does not require a license.
