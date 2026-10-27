@@ -17,6 +17,7 @@ NeoAPIWindows/obj/
 NeoAPIWindows/bin/
 Nrt5/Neuro-R_5.0.3_Ubuntu_24.04/
 Nrt5/Neuro-R_5.0.3_Windows/
+Nrt5/Neuro-R_5.0.3_Jetpack_6.2/
 Nrt5.Native/**/bin/
 Nrt5.Native/**/obj/
 Nrt5.Native/.artifacts/
