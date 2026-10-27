@@ -1,1 +1,7 @@
 *.dll filter=lfs diff=lfs merge=lfs -text
+Nrt5.Native/runtimes/win-x64/native/*.DLL filter=lfs diff=lfs merge=lfs -text
+Nrt5.Native/src/Nrt5Sdk/Generated/nrt.cs -text
+Nrt5.Native/THIRD-PARTY-NOTICES.txt -text
+Nrt5.Native/LICENSE.txt -text
+Nrt5.Native/README.md text eol=lf
+Nrt5.Native/build/Nrt5.Native.targets text eol=lf
