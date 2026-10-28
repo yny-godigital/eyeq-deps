@@ -10,8 +10,6 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
-    <PackageLicenseFile Condition="Exists('$(MSBuildProjectDirectory)/LICENSE.txt')">LICENSE.txt</PackageLicenseFile>
-    <PackageRequireLicenseAcceptance Condition="Exists('$(MSBuildProjectDirectory)/LICENSE.txt')">true</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,13 +17,10 @@
     <None Include="runtimes/win-x64/native/*" PackagePath="runtimes/win-x64/native/" Pack="true" />
     <None Include="build/Nrt5.Native.targets" PackagePath="build/" Pack="true" />
     <None Include="README.md;THIRD-PARTY-NOTICES.txt" PackagePath="/" Pack="true" />
-    <None Include="LICENSE.txt" PackagePath="/" Pack="true" Condition="Exists('LICENSE.txt')" />
   </ItemGroup>
 
   <Target Name="BuildNrt5ManagedBindings" BeforeTargets="GenerateNuspec">
     <Exec Command="dotnet build &quot;$(MSBuildProjectDirectory)/src/Nrt5Sdk/Nrt5Sdk.csproj&quot; --configuration &quot;$(Configuration)&quot;" />
-    <Error Condition="'$(Nrt5ForRelease)' == 'true' And !Exists('$(MSBuildProjectDirectory)/LICENSE.txt')"
-           Text="NRT redistribution terms are required for a release package." />
   </Target>
 
 </Project>
