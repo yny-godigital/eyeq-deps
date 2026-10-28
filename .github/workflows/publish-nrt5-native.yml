@@ -84,7 +84,7 @@ jobs:
           $project = 'Nrt5.Native/tests/Consumer/Consumer.csproj'
           python Nrt5.Native/tests/check_assets.py package "artifacts/Nrt5.Native.$env:VERSION.nupkg" --version $env:VERSION
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          dotnet restore $project -p:Nrt5PackageVersion=$env:VERSION --source "$env:GITHUB_WORKSPACE/artifacts" --source https://api.nuget.org/v3/index.json
+          dotnet restore $project -p:Nrt5PackageVersion=$env:VERSION --source https://api.nuget.org/v3/index.json --source "$env:GITHUB_WORKSPACE/artifacts"
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           dotnet build $project -c Release -p:Nrt5PackageVersion=$env:VERSION --no-restore
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
