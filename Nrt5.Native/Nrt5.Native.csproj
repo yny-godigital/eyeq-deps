@@ -7,16 +7,15 @@
     <Authors>ChewCW</Authors>
     <Description>NRT v5 C# bindings and Windows x64 Release runtime libraries.</Description>
     <PackageTags>nrt;neuro-runtime;inference;windows;x64</PackageTags>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+    <NoPackageAnalysis>false</NoPackageAnalysis>
     <IncludeBuildOutput>false</IncludeBuildOutput>
-    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="src/Nrt5Sdk/bin/$(Configuration)/net9.0/Nrt5Sdk.dll" PackagePath="lib/net9.0/" Pack="true" />
     <None Include="runtimes/win-x64/native/*" PackagePath="runtimes/win-x64/native/" Pack="true" />
     <None Include="build/Nrt5.Native.targets" PackagePath="build/" Pack="true" />
-    <None Include="README.md;THIRD-PARTY-NOTICES.txt" PackagePath="/" Pack="true" />
   </ItemGroup>
 
   <Target Name="BuildNrt5ManagedBindings" BeforeTargets="GenerateNuspec">
