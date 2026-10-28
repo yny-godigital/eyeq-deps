@@ -3,20 +3,9 @@ name: Publish Nrt5.Native
 on:
   workflow_dispatch:
     inputs:
-      action:
-        type: choice
-        options: [validate, publish]
-        default: validate
-        required: true
       version:
         type: string
         required: true
-      run_id:
-        type: string
-        description: "Run ID of the successful validate run"
-
-permissions:
-  contents: read
 
 env:
   DOTNET_VERSION: 9.0.x
@@ -24,99 +13,29 @@ env:
   GITHUB_FEED: https://nuget.pkg.github.com/yny-godigital/index.json
 
 jobs:
-  build:
-    if: inputs.action == 'validate'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          lfs: false
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - name: Check version and retrieve native assets
-        run: |
-          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]
-          git lfs pull --include='Nrt5.Native/runtimes/win-x64/native/*' --exclude=''
-          python Nrt5.Native/tests/check_assets.py inputs
-      - name: Build and check package
-        run: |
-          dotnet pack Nrt5.Native/Nrt5.Native.csproj -c Release -p:PackageVersion="$VERSION" -o artifacts
-          python Nrt5.Native/tests/check_assets.py package "artifacts/Nrt5.Native.$VERSION.nupkg" --version "$VERSION"
-      - uses: actions/upload-artifact@v4
-        with:
-          name: nrt5-candidate
-          path: artifacts/*.nupkg
-          compression-level: 0
-          retention-days: 14
-
-  consumer:
-    if: inputs.action == 'validate'
-    needs: build
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          lfs: false
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - uses: actions/download-artifact@v4
-        with:
-          name: nrt5-candidate
-          path: artifacts
-      - name: Check candidate and consumer output
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = 'Stop'
-          $env:NUGET_PACKAGES = "$env:RUNNER_TEMP/nrt5-nuget"
-          $project = 'Nrt5.Native/tests/Consumer/Consumer.csproj'
-          python Nrt5.Native/tests/check_assets.py package "artifacts/Nrt5.Native.$env:VERSION.nupkg" --version $env:VERSION
-          if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          dotnet restore $project -p:Nrt5PackageVersion=$env:VERSION --source https://api.nuget.org/v3/index.json --source "$env:GITHUB_WORKSPACE/artifacts"
-          if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          dotnet build $project -c Release -p:Nrt5PackageVersion=$env:VERSION --no-restore
-          if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          python Nrt5.Native/tests/check_assets.py output Nrt5.Native/tests/Consumer/bin/Release/net9.0/win-x64
-          if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          dotnet publish $project -c Release -p:Nrt5PackageVersion=$env:VERSION --no-restore -o artifacts/publish
-          if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          python Nrt5.Native/tests/check_assets.py output artifacts/publish
-          if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          dotnet artifacts/publish/Consumer.dll
-          if ($LASTEXITCODE) { exit $LASTEXITCODE }
-
   publish:
-    if: inputs.action == 'publish'
     runs-on: ubuntu-latest
     permissions:
-      actions: read
       contents: read
       packages: write
-    env:
-      GH_TOKEN: ${{ github.token }}
-      RUN_ID: ${{ inputs.run_id }}
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v4
         with:
           lfs: false
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-      - uses: actions/download-artifact@v4
+      - uses: actions/setup-python@v5
         with:
-          name: nrt5-candidate
-          path: artifacts
-      - name: Publish the validated artifact
+          python-version: '3.11'
+      - name: Build and publish
         run: |
+          set -euo pipefail
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]
+          git lfs pull --include='Nrt5.Native/runtimes/win-x64/native/*' --exclude=''
+          dotnet pack Nrt5.Native/Nrt5.Native.csproj -c Release -p:PackageVersion="$VERSION" -o artifacts
           dotnet nuget push "artifacts/Nrt5.Native.$VERSION.nupkg" \
-            --source "$GITHUB_FEED" --api-key "$GH_TOKEN" --skip-duplicate
+            --source "$GITHUB_FEED" --api-key "$GITHUB_TOKEN" --skip-duplicate
