@@ -13,12 +13,16 @@ on:
         required: true
       validation_run_id:
         type: string
+        description: "Required for action=publish: run ID of the successful validate run for this version"
       permission_reference:
         type: string
+        description: "Optional. Approval or change-record ID"
       smoke_reference:
         type: string
+        description: "Optional. Pointer to the Windows smoke-test evidence"
       smoke_package_sha256:
         type: string
+        description: "Optional. SHA-256 of Nrt5.Native.<version>.nupkg produced by the validate run"
 
 permissions:
   contents: read
@@ -114,11 +118,30 @@ jobs:
       - name: Check release evidence and select the validated source
         id: candidate
         run: |
-          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]
-          [[ "$RUN_ID" =~ ^[0-9]+$ ]]
-          [[ "$SMOKE_SHA256" =~ ^[0-9a-fA-F]{64}$ ]]
-          test -n "$PERMISSION_REFERENCE"
-          test -n "$SMOKE_REFERENCE"
+          set -euo pipefail
+          fail=0
+
+          if [[ ! "${VERSION:-}" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::version '${VERSION:-}' is not semver X.Y.Z[-pre]"; fail=1
+          fi
+
+          # required for publish: both the candidate artifact and the checkout ref come from this run
+          if [[ ! "${RUN_ID:-}" =~ ^[0-9]+$ ]]; then
+            echo "::error::validation_run_id is required when action=publish - it names the validate run that built nrt5-candidate"; fail=1
+          fi
+
+          # optional evidence: format is checked only when a value is supplied
+          if [[ -n "${SMOKE_SHA256:-}" && ! "$SMOKE_SHA256" =~ ^[0-9a-fA-F]{64}$ ]]; then
+            echo "::error::smoke_package_sha256 must be 64 hex chars (was ${#SMOKE_SHA256})"; fail=1
+          fi
+
+          # no API call or output write happens until the inputs are known good
+          [[ "$fail" -eq 0 ]] || exit 1
+
+          for v in PERMISSION_REFERENCE SMOKE_REFERENCE SMOKE_SHA256; do
+            [[ -n "${!v:-}" ]] || echo "::notice::$v not supplied - recorded as absent in the release evidence"
+          done
+
           gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID" > "$RUNNER_TEMP/nrt5-run.json"
           jq -e '.conclusion == "success" and .event == "workflow_dispatch" and .path == ".github/workflows/publish-nrt5-native.yml"' "$RUNNER_TEMP/nrt5-run.json"
           echo "sha=$(jq -r .head_sha "$RUNNER_TEMP/nrt5-run.json")" >> "$GITHUB_OUTPUT"
@@ -140,12 +163,18 @@ jobs:
           github-token: ${{ github.token }}
       - name: Check exact candidate and redistribution terms
         run: |
+          set -euo pipefail
           test -s Nrt5.Native/LICENSE.txt
           package="artifacts/Nrt5.Native.$VERSION.nupkg"
-          echo "$SMOKE_SHA256  $package" | sha256sum --check
+          if [[ -n "${SMOKE_SHA256:-}" ]]; then
+            echo "$SMOKE_SHA256  $package" | sha256sum --check
+          else
+            echo "::notice::smoke_package_sha256 not supplied - candidate hash not verified against smoke evidence"
+          fi
           python Nrt5.Native/tests/check_assets.py package "$package" --version "$VERSION"
           printf 'Validation run: %s\nPermission: %s\nWindows smoke test: %s\nPackage SHA-256: %s\n' \
-            "$RUN_ID" "$PERMISSION_REFERENCE" "$SMOKE_REFERENCE" "$SMOKE_SHA256" >> "$GITHUB_STEP_SUMMARY"
+            "$RUN_ID" "${PERMISSION_REFERENCE:-not supplied}" "${SMOKE_REFERENCE:-not supplied}" "${SMOKE_SHA256:-not supplied}" \
+            >> "$GITHUB_STEP_SUMMARY"
       - name: Publish the validated artifact
         run: |
           dotnet nuget push "artifacts/Nrt5.Native.$VERSION.nupkg" \
